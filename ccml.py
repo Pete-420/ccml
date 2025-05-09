@@ -61,7 +61,7 @@ def save_bits_to_binfile(bits, output_filename):
         f.write(byte_array)
 
 # Główna funkcja CCML
-def run_ccml(filename="input.bin", output_filename="output.bin", 
+def run_ccml(filename="source.bin", output_filename="post.bin", 
              N_target_bits=1024, 
              L=8, alpha=2.0, epsilon=0.05, omega=0.5, word_bits=64):
     
@@ -129,5 +129,29 @@ def run_ccml(filename="input.bin", output_filename="output.bin",
 
     final_output_bits = output_bits_collected[:N_target_bits]
     save_bits_to_binfile(final_output_bits, output_filename)
-    print(f"Zapisano {len(final_output_bits)} bitów do pliku {output_filename}")
+    print(f"Saved {len(final_output_bits)} bits to file {output_filename}")
+
+if __name__ == "__main__":
+    # This part will only run when the script is executed directly
+    # You can set default parameters here or parse them from command line arguments
+    
+    # Default input file is assumed to be 'data.bin' from the pre_processing step,
+    # located one directory level up from this script.
+    default_input_file = "source.bin" 
+    default_output_file = "post.bin" # Output in the same directory as the script
+
+    print(f"Running CCML with default parameters...")
+    print(f"Input file: {default_input_file}")
+    print(f"Output file: {default_output_file}")
+
+    run_ccml(filename=default_input_file, 
+             output_filename=default_output_file,
+             N_target_bits=2048, # Example: generate 2048 bits
+             L=8, 
+             alpha=2.0, 
+             epsilon=0.05, 
+             omega=0.5, 
+             word_bits=64)
+    
+    print("CCML processing complete.")
 
