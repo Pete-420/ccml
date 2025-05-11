@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from collections import Counter
 
 # Tent-like chaotic map
 def piecewise_map(x, alpha=2.0):
@@ -128,8 +130,44 @@ def run_ccml(filename="source.bin", output_filename="post.bin",
             break
 
     final_output_bits = output_bits_collected[:N_target_bits]
+
+    # Calculate and plot probability distribution for bytes in final_output_bits
+    # First, prepare the byte array as it would be saved to the file
+    bits_array_for_plot = np.array(final_output_bits, dtype=np.uint8)
+    if len(bits_array_for_plot) > 0:
+        padded_length_for_plot = ((len(bits_array_for_plot) + 7) // 8) * 8
+        padded_bits_for_plot = np.pad(bits_array_for_plot, (0, padded_length_for_plot - len(bits_array_for_plot)), constant_values=0)
+        byte_array_for_plot = np.packbits(padded_bits_for_plot)
+
+        if len(byte_array_for_plot) > 0:
+            plt.figure(figsize=(12, 6))
+            counts_bytes = Counter(byte_array_for_plot)
+            probabilities_bytes = np.array([counts_bytes[i]/len(byte_array_for_plot) for i in range(256)])
+            
+            plt.bar(range(256), probabilities_bytes, color='darkslateblue', width=1.0)
+            plt.title("Empirical Probability Distribution of Bytes in post.bin")
+            plt.xlabel("Byte Value (0-255)")
+            plt.ylabel("Probability")
+            plt.xlim([-0.5, 255.5])
+            if np.max(probabilities_bytes) > 0:
+                 plt.ylim([0, np.max(probabilities_bytes) * 1.1])
+            else:
+                 plt.ylim([0, 0.1])
+
+            # Calculate and print Shannon entropy
+            entropy = 0
+            for p_i in probabilities_bytes:
+                if p_i > 0:
+                    entropy -= p_i * np.log2(p_i)
+            print(f"Shannon entropy of bytes in post.bin: {entropy:.4f} bits per symbol")
+
+            plt.show()
+        else:
+            print("No byte data to plot for post.bin distribution (after packing bits).")
+    else:
+        print("No bit data to plot for post.bin distribution.")
+
     save_bits_to_binfile(final_output_bits, output_filename)
-    print(f"Saved {len(final_output_bits)} bits to file {output_filename}")
 
 if __name__ == "__main__":
     # This part will only run when the script is executed directly
@@ -146,7 +184,7 @@ if __name__ == "__main__":
 
     run_ccml(filename=default_input_file, 
              output_filename=default_output_file,
-             N_target_bits=2048, # Example: generate 2048 bits
+             N_target_bits=13000000, # example target bits
              L=8, 
              alpha=2.0, 
              epsilon=0.05, 
